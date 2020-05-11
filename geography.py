@@ -97,6 +97,8 @@ class map():
         self.latilongi = self.make_latilong(z, x1, x2, y1, y2)
         self.pix = 256
 
+
+
     def make_latilong(self, z, x1, x2, y1, y2):
         imgs = []
         for ix, x in enumerate(range(x1, x2+1)):
@@ -107,8 +109,8 @@ class map():
                 temp.append(img)
                 #idx[str(x) + '-' + str(y)] = [ix, iy]
             imgs.append(temp)
+        return np.array(imgs)
 
-        return imgs
 
     def where_each(self, ix, iy, lati, longi):
 
@@ -117,12 +119,13 @@ class map():
         #print('max, min',np.max(self.latilongi[ix][iy][:, :, 0]), np.min(self.latilongi[ix][iy][:, :, 0]))
         #print('max, min',np.max(self.latilongi[ix][iy][:, :, 1]), np.min(self.latilongi[ix][iy][:, :, 1]))
 
-        temp = np.abs(self.latilongi[ix][iy] - np.array([lati, longi]))
+        temp = np.abs(self.latilongi[ix, iy] - np.array([lati, longi]))
         #temp = np.abs(self.latilongi[ix][iy] - np.broadcast_to([lati, longi], self.latilongi[ix][iy].shape))
         diff = np.sum(temp, 2)
         arg = np.unravel_index(np.argmin(diff), diff.shape)
 
         return arg
+
 
     def where(self, lati, longi):
 
@@ -130,13 +133,17 @@ class map():
         tx, ty = tx.astype(np.int32), ty.astype(np.int32)
         arg_list = []
         for l1, l2, x, y in zip(lati, longi, tx, ty):
+            #if error, out of range
             i = self.idx[str(x) + '-' + str(y)]
+            
+
             arg = self.where_each(i[0], i[1], l1, l2)
             _input = [x, y, arg[0], arg[1]]
             #print(_input, i[0], i[1])
             arg_list.append(_input)
 
         return arg_list
+
 
     def colorize(self, arg_list, c):
         
@@ -159,6 +166,9 @@ class map():
 
     def get_cat_geos(self):
         return cat_imgs(self.geos)
+    
+    def get_cat_latilongi(self):
+        return cat_imgs(self.latilongi)
 
     #@property
     def get_color(self, x, y):
@@ -169,6 +179,19 @@ class map():
         i = self.idx[str(x) + '-' + str(y)]
         return self.geos[i[0], i[1]]
 
+
+
+    def latilongi_00(self):
+        return self.latilongi[0, 0, 0, 0]
+    def latilongi_10(self):
+        return self.latilongi[0, -1, 0, -1]
+    def latilongi_01(self):
+        return self.latilongi[-1, 0, -1, 0]
+    def latilongi_01(self):
+        return self.latilongi[-1, -1, -1, -1]
+
+    def latilongi_range(self):
+        return np.array([self.latilongi[0, 0, 0, 0].tolist(), self.latilongi[-1, -1, -1, -1].tolist()])
 
 if __name__ == '__main__':
 

@@ -15,6 +15,7 @@ def get_color(urlFormat, z, x, y):
 
     url = urlFormat.format(z,x,y)
     response = requests.get(url)
+
     print('status_code', response.status_code)
     if response.status_code == 404:
         colors=np.ones((256, 256, 3), dtype=object)
@@ -27,6 +28,8 @@ def get_color(urlFormat, z, x, y):
 def get_Gis(urlFormat, z, x, y):
     url = urlFormat.format(z,x,y)
     response = requests.get(url)
+
+    print('status_code', response.status_code)
     if response.status_code == 404:
             Z = np.zeros((256, 256))
     else:
@@ -81,9 +84,10 @@ def save_imgColors(path, urlFormat, z, x1, x2, y1, y2, t_sleep=1):
 
     for x in range(x1, x2+1):
         for y in range(y1, y2+1):
-            
+            print(x, y)
             time.sleep(t_sleep)
             img = get_color(urlFormat, z, x, y)
+            print(img.shape)
             np.save(path + 'color-' + str(z) + '-' + str(x) + '-' + str(y) + '.npy' , img)
 
 
@@ -94,6 +98,7 @@ def save_imgGis(path, urlFormat, z, x1, x2, y1, y2, t_sleep =1):
 
             time.sleep(t_sleep)
             Z = get_Gis(urlFormat, z, x, y)
+            print(Z.shape)
             np.save(path + 'gis-' + str(z) + '-' + str(x) + '-' + str(y) + '.npy' , Z)
 
 def test1():
@@ -201,23 +206,14 @@ def test_cat1():
 
 
 
-def test_cat2():
-    z= 9
-    x1 = 450
-    x2 = 451
-    y1 = 202
-    y2 = 203
-
-    path = './data/'
-    urlFormat_color = 'https://cyberjapandata.gsi.go.jp/xyz/english/{0}/{1}/{2}.png'
-    urlFormat_geo = 'https://cyberjapandata.gsi.go.jp/xyz/dem/{0}/{1}/{2}.txt'
-
+def load_images(path, z, x1, x2, y1, y2):
+    
     imgs, idx = load_imgs(path, z, x1, x2, y1, y2, 'color')
-    geos, idx = load_imgs(path, z, x1, x2, y1, y2, 'gis')
     img = cat_imgs(imgs)
-    geo = cat_imgs(geos)
-
     np.save('color.npy', img)
+
+    geos, idx = load_imgs(path, z, x1, x2, y1, y2, 'gis')
+    geo = cat_imgs(geos)
     np.save('geo.npy', geo)
 
     plt.figure()
@@ -228,27 +224,43 @@ def test_cat2():
     plt.show()
 
 
-def get_images():
-    z= 9
-    x1 = 450
-    x2 = 451
-    y1 = 202
-    y2 = 203
+def download_images(path, z, x1, x2, y1, y2):
 
-    path = './data/'
     urlFormat_color = 'https://cyberjapandata.gsi.go.jp/xyz/english/{0}/{1}/{2}.png'
-    urlFormat_geo = 'https://cyberjapandata.gsi.go.jp/xyz/dem/{0}/{1}/{2}.txt'
     save_imgColors(path, urlFormat_color, z, x1, x2, y1, y2)
+
+    urlFormat_geo = 'https://cyberjapandata.gsi.go.jp/xyz/dem/{0}/{1}/{2}.txt'
     save_imgGis(path, urlFormat_geo, z, x1, x2, y1, y2)
 
 
 if __name__ == '__main__':
     
     print('start')
-    
+    path = './data/'
+
+    #if True:
+    if False:
+        z= 9
+        x1 = 450
+        x2 = 451
+        y1 = 202
+        y2 = 203
+    elif False:
+        z= 10
+        x1 = 901
+        x2 = 903
+        y1 = 404
+        y2 = 406
+    elif True:
+        z= 11
+        x1 = 1802
+        x2 = 1806
+        y1 = 809
+        y2 = 812
+
     #check at here 
     #https://maps.gsi.go.jp/development/tileCoordCheck.html#10/35.0379/137.7143
 
-    #get_images()
+    download_images(path, z, x1, x2, y1, y2)
 
-    test_cat2()
+    load_images(path, z, x1, x2, y1, y2)
